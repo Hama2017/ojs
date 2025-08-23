@@ -2,7 +2,7 @@
  * Santaane AI Analysis Section Template
  * 
  * @package    SantaaneAI
- * @author     HAMADOU BA <contact@hamadouba.dev>
+ * @author     HAMADOU BA <contact@hamadouba.com>
  * @version    1.0.0
  * @copyright  2025 HAMADOU BA
  * @license    MIT License

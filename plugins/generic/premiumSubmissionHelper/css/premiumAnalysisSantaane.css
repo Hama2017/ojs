@@ -1,0 +1,393 @@
+/**
+ * Santaane AI Analysis Styles
+ * 
+ * @package    SantaaneAI
+ * @author     HAMADOU BA <contact@hamadouba.com>
+ * @version    1.0.0
+ * @copyright  2025 HAMADOU BA
+ * @license    MIT License
+ * @created    2025-08-23
+ * @updated    2025-08-23
+ * 
+ * Description: Complete stylesheet for Santaane AI analysis interface
+ * Features: Modern design, responsive layout, custom modals, animations
+ * Dependencies: Font Awesome 6.4.0+
+ * 
+ * Table of Contents:
+ * 1. Main Component Styles
+ * 2. Header & Navigation
+ * 3. Button Styles
+ * 4. Results & Stats
+ * 5. Keywords & Suggestions
+ * 6. Custom Modals & Alerts
+ * 7. Animations
+ * 8. Responsive Design
+ */
+
+/* ===== 1. MAIN COMPONENT STYLES ===== */
+.santaane-ai-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== 2. HEADER & NAVIGATION STYLES ===== */
+
+/* Header Styles */
+.santaane-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.santaane-title-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.santaane-icon {
+    font-size: 24px;
+    color: #6366f1;
+}
+
+.santaane-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.santaane-subtitle {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ===== 3. BUTTON STYLES ===== */
+
+/* Action Section */
+.santaane-action-section {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.santaane-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.santaane-btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+}
+
+.santaane-btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5b5fef, #7c3aed);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+}
+
+.santaane-btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.santaane-btn-success:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+.santaane-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.loading-spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* ===== 4. RESULTS & STATS STYLES ===== */
+
+/* Results Container */
+.santaane-results-container {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stats Grid */
+.santaane-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.santaane-stat-card {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.santaane-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 24px;
+    color: #6366f1;
+    margin-bottom: 12px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Section Styles */
+.santaane-section {
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #f3f4f6;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.section-header i {
+    font-size: 18px;
+    color: #6366f1;
+}
+
+.section-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+/* ===== 5. KEYWORDS & SUGGESTIONS STYLES ===== */
+
+/* Keywords */
+.keywords-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.keyword-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.keyword-tag.present {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+.keyword-tag.absent {
+    background: linear-gradient(135deg, #fef2f2, #fecaca);
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.keyword-tag i {
+    font-size: 10px;
+}
+
+
+
+/* Suggestions */
+.suggestions-container {
+    space-y: 12px;
+}
+
+.suggestion-item {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 4px solid #f59e0b;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.suggestion-icon {
+    color: #f59e0b;
+    font-size: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.suggestion-text {
+    margin: 0;
+    color: #374151;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ===== 6. AI ENHANCED SECTION ===== */
+
+/* AI Enhanced Section */
+.ai-enhanced-section {
+    background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+    border: 1px solid #86efac;
+}
+
+.enhanced-content {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 4px solid #10b981;
+}
+
+.enhanced-text-wrapper {
+    margin-bottom: 16px;
+}
+
+.enhanced-text {
+    margin: 0;
+    color: #374151;
+    line-height: 1.6;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.enhanced-actions {
+    text-align: center;
+}
+
+/* ===== 7. FOOTER & ERROR STYLES ===== */
+
+/* Footer */
+.santaane-footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 20px;
+}
+
+.analysis-timestamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.analysis-timestamp i {
+    color: #9ca3af;
+}
+
+/* Error Styles */
+.santaane-error {
+    background: linear-gradient(135deg, #fef2f2, #fecaca);
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: shake 0.5s ease-in-out;
+}
+
+.santaane-error i {
+    color: #dc2626;
+    font-size: 18px;
+}
+
+.error-message {
+    color: #991b1b;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* ===== 8. RESPONSIVE DESIGN ===== */
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .santaane-ai-section {
+        padding: 16px;
+        margin: 10px 0;
+    }
+    
+    .santaane-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .santaane-title {
+        font-size: 20px;
+    }
+    
+    .santaane-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
