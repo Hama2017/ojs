@@ -4,7 +4,7 @@
  * 
  * @package    PremiumSubmissionHelper
  * @subpackage SantaaneAI
- * @author     HAMADOU BA <contact@hamadouba.com>
+ * @author     HAMADOU BA <contact@hamadouba.dev>
  * @version    1.0.0
  * @copyright  2025 HAMADOU BA
  * @license    MIT License
@@ -45,6 +45,12 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
     /** @var string Target page for submission enhancement */
     const SUBMISSION_PAGE_TARGET = 'submission';
     
+    /** @var string Premium subscription type name */
+    const PREMIUM = 'premium';
+    
+    /** @var bool Indicates if current user has premium access */
+    private $isPremium = false;
+
     /**
      * Register the plugin and its hooks
      * 
@@ -91,6 +97,100 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         return 'Plugin to assist premium submission with Santaane AI analysis.';
     }
 
+    /**
+     * Check if user has an active premium subscription (individual or institutional)
+     * 
+     * @method checkUserPremiumStatus
+     * @author HAMADOU BA
+     * @param object $journal Journal instance
+     * @param object $user User instance
+     * @return bool True if user is premium, false otherwise
+     */
+    private function checkUserPremiumStatus($journal, $user): bool
+    {
+        if (!$user || !$journal) {
+            return false;
+        }
+
+        try {
+            // Check individual subscription first
+            if ($this->checkIndividualPremiumSubscription($journal, $user)) {
+                return true;
+            }
+
+            // Check institutional subscription
+            if ($this->checkInstitutionalPremiumSubscription($journal, $user)) {
+                return true;
+            }
+
+        } catch (Exception $e) {
+            error_log('Error checking user premium status: ' . $e->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * Check individual premium subscription
+     * 
+     * @method checkIndividualPremiumSubscription
+     * @author HAMADOU BA
+     * @param object $journal Journal instance
+     * @param object $user User instance
+     * @return bool True if user has individual premium subscription
+     */
+    private function checkIndividualPremiumSubscription($journal, $user): bool
+    {
+        try {
+            $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
+            $subscription = $subscriptionDao->getByUserIdForJournal($user->getId(), $journal->getId());
+
+            if ($subscription) {
+                // Check if subscription is active and premium
+                if (!$subscription->isExpired() && trim($subscription->getSubscriptionTypeName()) === self::PREMIUM) {
+                    return true;
+                }
+            }
+
+        } catch (Exception $e) {
+            error_log('Error checking individual subscription: ' . $e->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * Check institutional premium subscription
+     * 
+     * @method checkInstitutionalPremiumSubscription
+     * @author HAMADOU BA
+     * @param object $journal Journal instance
+     * @param object $user User instance
+     * @return bool True if user has institutional premium subscription
+     */
+    private function checkInstitutionalPremiumSubscription($journal, $user): bool
+    {
+        try {
+            $subscriptionInstitutionalDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
+            $institutionalSubscriptions = $subscriptionInstitutionalDao->getByUserIdForJournal($user->getId(), $journal->getId());
+
+            if ($institutionalSubscriptions) {
+                while ($subscription = $institutionalSubscriptions->next()) {
+                    // Check if subscription belongs to user and is premium
+                    if ($subscription->getUserId() === $user->getId() &&
+                        !$subscription->isExpired() &&
+                        trim($subscription->getSubscriptionTypeName()) === self::PREMIUM) {
+                        return true;
+                    }
+                }
+            }
+
+        } catch (Exception $e) {
+            error_log('Error checking institutional subscription: ' . $e->getMessage());
+        }
+
+        return false;
+    }
 
     /**
      * Handle template display and inject assets
@@ -113,6 +213,12 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
             return false;
         }
 
+        // Check if user is premium and store in instance variable
+        $this->isPremium = $this->checkUserPremiumStatus($journal, $user);
+
+        if (!$this->isPremium) {
+            return false;
+        }
 
         // Add assets and inject Santaane AI section (for premium users only)
         $templateMgr->addStylesheet(
@@ -175,6 +281,10 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         $smarty = $args[1];
         $output =& $args[2];
 
+        // Only inject template if user is premium
+        if (!$this->isPremium) {
+            return false;
+        }
 
         // Inject Santaane AI section template
         $output .= sprintf(
