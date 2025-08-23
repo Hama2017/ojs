@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="https://i.ibb.co/9Lrd2M1/b00e9043-b6ca-4f61-8328-f6bb99c2c396.png" alt="Premium Submission Helper Logo" width="500">
+<img src="https://i.ibb.co/PvTrC8Dc/12d69de3-0cd1-4ce1-af72-6000586f3532.png" alt="Premium Submission Helper Logo" width="500">
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/your-username/premium-submission-helper/releases) [![OJS](https://img.shields.io/badge/OJS-3.5+-green.svg)](https://pkp.sfu.ca/software/ojs/) [![PHP](https://img.shields.io/badge/PHP-8.1+-purple.svg)](https://www.php.net/) [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
