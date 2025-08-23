@@ -4,7 +4,7 @@
  * 
  * @package    PremiumSubmissionHelper
  * @subpackage SantaaneAI
- * @author     HAMADOU BA <contact@hamadouba.dev>
+ * @author     HAMADOU BA <contact@hamadouba.com>
  * @version    1.0.0
  * @copyright  2025 HAMADOU BA
  * @license    MIT License
@@ -44,12 +44,6 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
 {
     /** @var string Target page for submission enhancement */
     const SUBMISSION_PAGE_TARGET = 'submission';
-    
-    /** @var string Premium subscription type name */
-    const PREMIUM = 'premium';
-    
-    /** @var bool Indicates if current user has premium access */
-    private $isPremium = false;
 
     /**
      * Register the plugin and its hooks
@@ -66,7 +60,8 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         $success = parent::register($category, $path, $mainContextId);
         
         if ($success && $this->getEnabled($mainContextId)) {
-       
+            Hook::add('TemplateManager::display', [$this, 'handleTemplateDisplay']);
+            Hook::add('Template::SubmissionWizard::Section', [$this, 'handleSubmissionWizardSection']);
         }
         
         return $success;
@@ -96,5 +91,46 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         return 'Plugin to assist premium submission with Santaane AI analysis.';
     }
 
-  
+    /**
+     * Handle template display and inject assets
+     * 
+     * @method handleTemplateDisplay
+     * @author HAMADOU BA
+     * @param string $hookName Hook name
+     * @param array $args Hook arguments
+     * @return bool Hook handling result
+     */
+    public function handleTemplateDisplay($hookName, $args)
+    {
+        $templateMgr = $args[0];
+        $request = Application::get()->getRequest();
+        $journal = $request->getJournal();
+        $user = $request->getUser();
+
+        // Only inject on submission pages
+        if ($request->getRequestedPage() !== self::SUBMISSION_PAGE_TARGET) {
+            return false;
+        }
+
+
+        return false;
+    }
+
+    /**
+     * Handle submission wizard section rendering
+     * 
+     * @method handleSubmissionWizardSection
+     * @author HAMADOU BA
+     * @param string $hookName Hook name
+     * @param array $args Hook arguments
+     * @return bool Hook handling result
+     */
+    public function handleSubmissionWizardSection($hookName, $args)
+    {
+        $smarty = $args[1];
+        $output =& $args[2];
+
+
+        return false;
+    }
 }
