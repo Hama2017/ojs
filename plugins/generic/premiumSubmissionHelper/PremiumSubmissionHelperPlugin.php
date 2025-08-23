@@ -44,7 +44,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
 {
     /** @var string Target page for submission enhancement */
     const SUBMISSION_PAGE_TARGET = 'submission';
-
+    
     /**
      * Register the plugin and its hooks
      * 
@@ -91,6 +91,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         return 'Plugin to assist premium submission with Santaane AI analysis.';
     }
 
+
     /**
      * Handle template display and inject assets
      * 
@@ -113,6 +114,50 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         }
 
 
+        // Add assets and inject Santaane AI section (for premium users only)
+        $templateMgr->addStylesheet(
+            'plugin-premium-analysis-santaane-css',
+            $request->getBaseUrl() . '/' . $this->getPluginPath() . '/vendor/css/fontawesome-free-6.7.2-web/css/all.min.css',
+            [
+                'contexts' => 'backend',
+                'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
+            ]
+        );
+
+        $templateMgr->addStylesheet(
+            'plugin-premium-analysis-santaane-font-awesome-css',
+            $request->getBaseUrl() . '/' . $this->getPluginPath() . '/css/premiumAnalysisSantaane.css',
+            [
+                'contexts' => 'backend',
+                'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
+            ]
+        );
+
+        $templateMgr->addJavaScript(
+            'plugin-premium-analysis-santaane-js',
+            $request->getBaseUrl() . '/' . $this->getPluginPath() . '/js/premiumAnalysisSantaane.js',
+            [
+                'contexts' => 'backend',
+                'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
+            ]
+        );
+
+        // Inject Santaane AI section into submission wizard
+        $steps = $templateMgr->getState('steps');
+        if ($steps) {
+            $steps = array_map(function($step) {
+                if ($step['id'] === 'details') {
+                    $step['sections'][] = [
+                        'id' => 'santaaneAiSection',
+                        'type' => SubmissionHandler::SECTION_TYPE_TEMPLATE,
+                    ];
+                }
+                return $step;
+            }, $steps);
+
+            $templateMgr->setState(['steps' => $steps]);
+        }
+
         return false;
     }
 
@@ -130,6 +175,12 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         $smarty = $args[1];
         $output =& $args[2];
 
+
+        // Inject Santaane AI section template
+        $output .= sprintf(
+            '<template v-else-if="section.id === \'santaaneAiSection\'">%s</template>',
+            $smarty->fetch($this->getTemplateResource('santaaneAiSection.tpl'))
+        );
 
         return false;
     }
