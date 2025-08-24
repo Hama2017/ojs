@@ -4,8 +4,8 @@
  * 
  * @package    PremiumSubmissionHelper
  * @subpackage SantaaneAI
- * @author     HAMADOU BA <contact@hamadouba.dev>
- * @version    1.0.0
+ * @author     HAMADOU BA <contact@hamadouba.com>
+ * @version    1.1.1
  * @copyright  2025 HAMADOU BA
  * @license    MIT License
  * @created    2025-08-23
@@ -30,15 +30,13 @@ use APP\core\Application;
 use APP\template\TemplateManager;
 use APP\pages\submission\SubmissionHandler;
 use PKP\db\DAORegistry;
+use PKP\security\Role;
 
 /**
  * PremiumSubmissionHelperPlugin Class
  * 
  * Main plugin class for integrating Santaane AI analysis into OJS submission workflow
- * 
- * @class PremiumSubmissionHelperPlugin
- * @extends GenericPlugin
- * @author HAMADOU BA
+ * Handles premium user checks and submission wizard enhancements
  */
 class PremiumSubmissionHelperPlugin extends GenericPlugin 
 {
@@ -98,6 +96,51 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
     }
 
     /**
+     * Retrieve the names of roles assigned to a user within a journal - Notice Not Workings Properly but this is a starting point = )
+     * 
+     * @method getUserRolesNames
+     * @author HAMADOU BA
+     * @param object $journal Journal instance
+     * @param object $user User instance
+     * @return array Array of role names (strings)
+     */
+    private function getUserRolesNames($journal, $user): array
+    {
+        $roleNames = [];
+
+        if (!$user || !$journal) {
+            return $roleNames;
+        }
+
+        try {
+            // Retrieve Role objects for the user
+            $userRoles = $user->getRoles($journal->getId());
+
+            if (empty($userRoles)) {
+                return $roleNames;
+            }
+
+            // Extract Role IDs
+            $userRoleIds = array_map(fn($role) => $role->getId(), $userRoles);
+
+            // Get role names using Application::getRoleNames()
+            $userRoleNames = \APP\core\Application::getRoleNames(false, $userRoleIds);
+
+            foreach ($userRoleNames as $fullRoleName) {
+                // fullRoleName format: "user.role.manager" or "user.role.premium"
+                $parts = explode('.', $fullRoleName);
+                $lastPart = end($parts); // Extract the last part
+                $roleNames[] = $lastPart;
+            }
+
+        } catch (Exception $e) {
+            // Ignore errors silently
+        }
+
+        return $roleNames;
+    }
+
+    /**
      * Check if user has an active premium subscription (individual or institutional)
      * 
      * @method checkUserPremiumStatus
@@ -113,31 +156,42 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         }
 
         try {
-            // Check individual subscription first
+
+            // Notice Not Workings Properly but this is a starting point = ) thats why i implemented the role check with subscription checks
+            // Check if user has 'premium' role first 
+
+            $userRoles = $this->getUserRolesNames($journal, $user);
+            $isPremiumUser = in_array(self::PREMIUM, $userRoles);
+
+            if ($isPremiumUser) {
+                return true;
+            }
+
+            // Check individual premium subscription Additional feature  Works properly
             if ($this->checkIndividualPremiumSubscription($journal, $user)) {
                 return true;
             }
 
-            // Check institutional subscription
+            // Check institutional premium subscription Additional feature Works properly
             if ($this->checkInstitutionalPremiumSubscription($journal, $user)) {
                 return true;
             }
 
         } catch (Exception $e) {
-            error_log('Error checking user premium status: ' . $e->getMessage());
+            // Ignore errors silently
         }
 
         return false;
     }
 
     /**
-     * Check individual premium subscription
+     * Check if user has an active individual premium subscription
      * 
      * @method checkIndividualPremiumSubscription
      * @author HAMADOU BA
      * @param object $journal Journal instance
      * @param object $user User instance
-     * @return bool True if user has individual premium subscription
+     * @return bool True if user has individual premium subscription, false otherwise
      */
     private function checkIndividualPremiumSubscription($journal, $user): bool
     {
@@ -145,28 +199,21 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
             $subscription = $subscriptionDao->getByUserIdForJournal($user->getId(), $journal->getId());
 
-            if ($subscription) {
-                // Check if subscription is active and premium
-                if (!$subscription->isExpired() && trim($subscription->getSubscriptionTypeName()) === self::PREMIUM) {
-                    return true;
-                }
-            }
+            return $subscription && !$subscription->isExpired() && trim($subscription->getSubscriptionTypeName()) === self::PREMIUM;
 
         } catch (Exception $e) {
-            error_log('Error checking individual subscription: ' . $e->getMessage());
+            return false;
         }
-
-        return false;
     }
 
     /**
-     * Check institutional premium subscription
+     * Check if user has an active institutional premium subscription
      * 
      * @method checkInstitutionalPremiumSubscription
      * @author HAMADOU BA
      * @param object $journal Journal instance
      * @param object $user User instance
-     * @return bool True if user has institutional premium subscription
+     * @return bool True if user has institutional premium subscription, false otherwise
      */
     private function checkInstitutionalPremiumSubscription($journal, $user): bool
     {
@@ -176,7 +223,6 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
 
             if ($institutionalSubscriptions) {
                 while ($subscription = $institutionalSubscriptions->next()) {
-                    // Check if subscription belongs to user and is premium
                     if ($subscription->getUserId() === $user->getId() &&
                         !$subscription->isExpired() &&
                         trim($subscription->getSubscriptionTypeName()) === self::PREMIUM) {
@@ -186,14 +232,14 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
             }
 
         } catch (Exception $e) {
-            error_log('Error checking institutional subscription: ' . $e->getMessage());
+            return false;
         }
 
         return false;
     }
 
     /**
-     * Handle template display and inject assets
+     * Handle template display and inject CSS/JS assets for premium users
      * 
      * @method handleTemplateDisplay
      * @author HAMADOU BA
@@ -213,14 +259,14 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
             return false;
         }
 
-        // Check if user is premium and store in instance variable
+        // Check if user is premium
         $this->isPremium = $this->checkUserPremiumStatus($journal, $user);
 
         if (!$this->isPremium) {
             return false;
         }
 
-        // Add assets and inject Santaane AI section (for premium users only)
+        // Add CSS and JS assets
         $templateMgr->addStylesheet(
             'plugin-premium-analysis-santaane-css',
             $request->getBaseUrl() . '/' . $this->getPluginPath() . '/vendor/css/fontawesome-free-6.7.2-web/css/all.min.css',
@@ -268,7 +314,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
     }
 
     /**
-     * Handle submission wizard section rendering
+     * Handle submission wizard section rendering for premium users
      * 
      * @method handleSubmissionWizardSection
      * @author HAMADOU BA
