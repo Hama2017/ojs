@@ -4,9 +4,9 @@
 
 <img src="https://i.ibb.co/9Lrd2M1/b00e9043-b6ca-4f61-8328-f6bb99c2c396.png" alt="Premium Submission Helper Logo" width="500">
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/your-username/premium-submission-helper/releases) [![OJS](https://img.shields.io/badge/OJS-3.5+-green.svg)](https://pkp.sfu.ca/software/ojs/) [![PHP](https://img.shields.io/badge/PHP-8.1+-purple.svg)](https://www.php.net/) [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/your-username/premium-submission-helper/releases) [![OJS](https://img.shields.io/badge/OJS-3.5+-green.svg)](https://pkp.sfu.ca/software/ojs/) [![PHP](https://img.shields.io/badge/PHP-8.1+-purple.svg)](https://www.php.net/) [![AI](https://img.shields.io/badge/AI-AIMLAPI-orange.svg)](https://aimlapi.com) [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
-**Enhance your OJS submission workflow with AI-powered premium features**
+**Enhance your OJS submission workflow with real AI-powered premium features**
 
 [Features](#features) • [Installation](#installation) • [Configuration](#configuration) • [Usage](#usage) • [Support](#support)
 
@@ -19,10 +19,19 @@
 - **Institutional Subscription Support** - Handles institutional premium access seamlessly  
 - **Real-time Verification** - Dynamic subscription status checking during submission process
 
-### Santaane AI Integration
-- **AI-Powered Analysis** - Enhanced abstract and content analysis for premium users
-- **Smart Suggestions** - Intelligent recommendations for submission improvement
-- **Premium-Only Access** - Exclusive AI features for subscribed users
+### Real AI Analysis Integration
+- **Powered by AIMLAPI.com** - Uses genuine AI models (DeepSeek-R1) for authentic analysis
+- **Intelligent Abstract Analysis** - Advanced text analysis with real AI insights
+- **Smart Suggestions** - AI-generated recommendations for abstract improvement
+- **Enhanced Text Generation** - AI-powered abstract enhancement and optimization
+- **Premium-Only Access** - Exclusive AI features for subscribed users only
+
+### Modern AI-Powered Features
+- **Real-time AI Processing** - Direct integration with AIMLAPI for instant analysis
+- **Advanced Language Models** - Leverages state-of-the-art AI models like DeepSeek-R1
+- **Contextual Understanding** - AI comprehends academic writing context and structure
+- **Quality Scoring** - AI-generated clarity and quality scores for abstracts
+- **Professional Suggestions** - Academic writing improvement recommendations
 
 ### Enhanced UI/UX
 - **Modern Interface** - Clean, intuitive submission wizard enhancement
@@ -37,6 +46,7 @@
 - **OJS 3.5+** - Open Journal Systems
 - **PHP 8.1+** - Server environment  
 - **Font Awesome 6.4.0+** - Icon library
+- **AIMLAPI Account** - Account at [aimlapi.com](https://aimlapi.com) with API key
 - **Active Subscriptions** - Individual or institutional premium subscriptions configured
 
 ### Installation
@@ -52,16 +62,37 @@
    cp -r . /path/to/ojs/plugins/generic/premiumSubmissionHelper/
    ```
 
-3. **Enable the plugin**
+3. **Configure AI API Key**
+   - Edit `js/premiumAnalysisSantaane.js`
+   - Replace `YOUR_AIMLAPI_KEY` with your actual AIMLAPI key:
+   ```javascript
+   this.AIML_API_KEY = 'your-actual-aimlapi-key-here';
+   ```
+
+4. **Enable the plugin**
    - Navigate to `Settings` → `Website` → `Plugins`
    - Find "Premium Submission Helper" in the Generic Plugins list
    - Click **Enable**
 
-4. **Verify installation**
+5. **Verify installation**
    - Check that premium users see enhanced submission features
-   - Verify non-premium users have standard access
+   - Verify AI analysis works with real responses
 
 ## Configuration
+
+### AIMLAPI Setup
+
+1. **Get AIMLAPI Account**
+   - Visit [aimlapi.com](https://aimlapi.com)
+   - Create account and obtain API key
+   - Ensure sufficient credits for AI model usage
+
+2. **Configure API Key**
+   ```javascript
+   // In js/premiumAnalysisSantaane.js
+   this.AIML_API_KEY = 'your-aimlapi-key-here';
+   this.AI_MODEL = 'deepseek/deepseek-r1'; // Default model
+   ```
 
 ### Subscription Types Setup
 
@@ -97,27 +128,29 @@ const PREMIUM = 'premium';                    // Premium subscription type name
 
 ### For Premium Users
 
-1. **Enhanced Submission Experience**
+1. **AI-Enhanced Submission Experience**
    - Navigate to journal submission page
    - Premium users automatically see Santaane AI section
-   - Access advanced analysis and suggestions
+   - Access real AI-powered analysis and suggestions
 
-2. **AI-Powered Features**
-   - Abstract analysis and improvement suggestions
-   - Content optimization recommendations
-   - Smart formatting assistance
+2. **Real AI-Powered Features**
+   - **Abstract Analysis** - AI examines writing structure and clarity
+   - **Quality Scoring** - AI-generated clarity scores (60-100%)
+   - **Smart Suggestions** - AI recommendations for improvement
+   - **Enhanced Version** - AI-generated improved abstract
+   - **Academic Writing Optimization** - AI understands scholarly context
 
 ### For Administrators
 
-1. **User Management**
+1. **AI Integration Management**
+   - Monitor AIMLAPI usage and costs
+   - Configure AI model parameters
+   - Track AI analysis success rates
+
+2. **User Management**
    - Monitor premium subscription status
    - Manage individual and institutional access
    - Track feature usage through logs
-
-2. **Customization**
-   - Modify CSS in `/css/premiumAnalysisSantaane.css`
-   - Update JavaScript in `/js/premiumAnalysisSantaane.js`
-   - Customize templates in `/templates/`
 
 ## Development
 
@@ -129,12 +162,28 @@ premiumSubmissionHelper/
 ├── css/
 │   └── premiumAnalysisSantaane.css     # Plugin styles
 ├── js/
-│   └── premiumAnalysisSantaane.js      # Plugin scripts
+│   └── premiumAnalysisSantaane.js      # AI integration scripts
 ├── templates/
 │   └── santaaneAiSection.tpl          # AI section template
 ├── vendor/
 │   └── css/fontawesome-free-6.7.2-web/ # Font Awesome assets
 └── README.md                           # Documentation
+```
+
+### AI Integration Architecture
+
+```javascript
+// AI Analysis Flow
+class SantaaneAI {
+    // Real AIMLAPI integration
+    callAIMLAPI(abstractText)
+    
+    // AI prompt generation for academic context
+    buildAnalysisPrompt(abstractText)
+    
+    // Parse structured AI responses
+    parseAIResponse(aiResponse, originalText)
+}
 ```
 
 ### Key Methods
@@ -150,16 +199,14 @@ checkIndividualPremiumSubscription($journal, $user): bool
 checkInstitutionalPremiumSubscription($journal, $user): bool
 ```
 
-### Debugging
+### AI Model Configuration
 
-Enable debug logging to monitor subscription checks:
-
-```php
-// Individual subscription debug
-error_log('Individual subscription check: ' . $result);
-
-// Institutional subscription debug  
-error_log('Institutional subscription check: ' . $result);
+```javascript
+// Configurable AI parameters
+this.AIML_API_URL = 'https://api.aimlapi.com/v1/chat/completions';
+this.AI_MODEL = 'deepseek/deepseek-r1';
+this.TEMPERATURE = 0.7;
+this.MAX_TOKENS = 2000;
 ```
 
 ## Troubleshooting
@@ -171,25 +218,35 @@ error_log('Institutional subscription check: ' . $result);
 - Check subscription type name matches `'premium'`
 - Ensure subscription is not expired
 
+**AI Analysis not working**
+- Verify AIMLAPI key is correctly configured
+- Check AIMLAPI account has sufficient credits
+- Ensure internet connectivity for API calls
+- Check browser console for JavaScript errors
+
+**API Rate Limiting**
+- Monitor AIMLAPI usage limits
+- Implement retry logic if needed
+- Consider upgrading AIMLAPI plan for higher limits
+
 **Assets not loading**
 - Verify file permissions in plugin directory
 - Check plugin is enabled in OJS admin
 - Clear browser cache and OJS cache
 
-**Subscription detection fails**
-- Check OJS logs for error messages
-- Verify database subscription entries
-- Test with both individual and institutional subscriptions
-
 ### Debug Mode
 
 Enable detailed logging:
 
+```javascript
+// Browser console debugging
+console.log('AIMLAPI Response:', data);
+console.log('Analysis completed:', result);
+```
+
 ```php
-// Add to config.inc.php
-[debug]
-display_errors = On
-log_errors = On
+// PHP logging
+error_log('Premium subscription check: ' . $result);
 ```
 
 ## Support
@@ -200,6 +257,7 @@ log_errors = On
 - **Issues**: [GitHub Issues](https://github.com/your-username/premium-submission-helper/issues)
 - **Documentation**: [Wiki](https://github.com/your-username/premium-submission-helper/wiki)
 - **Discussions**: [GitHub Discussions](https://github.com/your-username/premium-submission-helper/discussions)
+- **AIMLAPI Support**: [aimlapi.com/support](https://aimlapi.com/support)
 
 ### Contributing
 
@@ -212,6 +270,19 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 5. Open a Pull Request
 
 ## Changelog
+
+### v1.1.0 - 2025-08-23
+
+**Major AI Integration Update**
+
+- **Real AI Integration** - Replaced mock analysis with genuine AI via AIMLAPI
+- **DeepSeek-R1 Model** - Integrated advanced language model for analysis
+- **Simplified Architecture** - Removed complex PHP handlers, direct API integration
+- **Enhanced Analysis** - Real AI-powered abstract analysis and suggestions
+- **Improved Prompts** - Optimized AI prompts for academic writing context
+- **Better UX** - Streamlined interface focusing on AI-generated insights
+- **Removed Keywords** - Simplified analysis by removing keyword checking
+- **Direct API Calls** - Client-side integration with AIMLAPI for better performance
 
 ### v1.0.0 - 2025-08-23
 
@@ -240,8 +311,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
+
 **Made with love for the OJS community**
 
-Star us on GitHub if this plugin helped you!
+⭐ Star us on GitHub if this plugin helped you!
 
 </div>

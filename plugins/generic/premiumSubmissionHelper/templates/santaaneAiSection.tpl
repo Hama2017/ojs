@@ -1,5 +1,5 @@
 <!--
- * Santaane AI Analysis Section Template
+ * Santaane AI Analysis Section Template - Sans Keywords
  * 
  * @package    SantaaneAI
  * @author     HAMADOU BA <contact@hamadouba.com>
@@ -17,7 +17,6 @@
  * - Header with branding
  * - Action button with loading state
  * - Results section with stats grid
- * - Keywords analysis display
  * - Improvement suggestions list
  * - AI enhanced version with apply button
  * - Footer with timestamp
@@ -81,19 +80,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Keywords Section -->
-        <div class="santaane-section">
-            <div class="section-header">
-                <i class="fas fa-tags"></i>
-                <h4>Keyword Analysis</h4>
-            </div>
-            <div id="keywords-container" class="keywords-container">
-                <!-- Keywords will be populated here -->
-            </div>
-        </div>
-
-
 
         <!-- Suggestions Section -->
         <div class="santaane-section">

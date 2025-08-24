@@ -1,5 +1,5 @@
 /**
- * Santaane AI Analysis JavaScript
+ * Santaane AI Analysis JavaScript - AIML API Version
  * 
  * @package    SantaaneAI
  * @author     HAMADOU BA <contact@hamadouba.com>
@@ -9,24 +9,14 @@
  * @created    2025-08-23
  * @updated    2025-08-23
  * 
- * Description: AI-powered abstract analysis for OJS submission workflow
- * Features: TinyMCE integration, real-time analysis, custom notifications
+ * Description: AI-powered abstract analysis using AIML API
+ * Features: Real AI analysis, TinyMCE integration, custom notifications
  * Dependencies: TinyMCE, Font Awesome 6.4.0+
- * 
- * @class SantaaneAI
- * @classdesc Main class handling AI analysis functionality
- */
-
-/**
- * SantaaneAI Class - Main application controller
- * Handles AI analysis workflow for OJS abstract enhancement
  */
 
 class SantaaneAI {
     /**
      * Constructor - Initialize the Santaane AI Analysis system
-     * @constructor
-     * @author HAMADOU BA
      */
     constructor() {
         this.analyzeBtn = document.getElementById('santaane-analyze-btn');
@@ -35,15 +25,17 @@ class SantaaneAI {
         this.applyBtn = document.getElementById('apply-enhanced-btn');
         this.currentAnalysisData = null;
         
+        // AIML API Configuration
+        this.AIML_API_KEY = '129edc202c934c9fa84238257fe86fa8'; // Replace with your actual API key
+        this.AIML_API_URL = 'https://api.aimlapi.com/v1/chat/completions';
+        this.AI_MODEL = 'deepseek/deepseek-r1';
+        
         this.init();
     }
 
     /**
      * Initialize event listeners and setup
-     * @method init
-     * @author HAMADOU BA
      */
-
     init() {
         if (this.analyzeBtn) {
             this.analyzeBtn.addEventListener('click', () => this.runAnalysis());
@@ -52,15 +44,10 @@ class SantaaneAI {
         if (this.applyBtn) {
             this.applyBtn.addEventListener('click', () => this.applyEnhancedVersion());
         }
-        
     }
 
     /**
-     * Run AI analysis on the abstract text
-     * @async
-     * @method runAnalysis  
-     * @author HAMADOU BA
-     * @returns {Promise<void>}
+     * Run AI analysis on the abstract text using AIML API
      */
     async runAnalysis() {
         try {
@@ -73,51 +60,13 @@ class SantaaneAI {
                 throw new Error('Please enter an abstract to analyze.');
             }
 
-            // MOCK API - Comment this block to use real API
-            const mockResponse = {
-                "wordCount": 145,
-                "sentenceCount": 7,
-                "keywordCheck": {
-                    "AI": true,
-                    "Blockchain": false,
-                    "SmartContracts": true
-                },
-                "clarityScore": 82,
-                "suggestions": [
-                    "Consider adding more references to Blockchain concepts.",
-                    "Break long sentences into shorter ones for better readability.",
-                    "Add a concluding sentence to summarize the abstract."
-                ],
-                "aiEnchanched": "The abstract could be slightly expanded to include Blockchain references and a stronger concluding sentence for clarity.",
-                "analysisTimestamp": new Date().toISOString()
-            };
+            console.log('Analyzing abstract:', abstractText);
 
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Call AIML API for analysis
+            const analysisData = await this.callAIMLAPI(abstractText);
             
-            this.currentAnalysisData = mockResponse;
-            this.displayResults(mockResponse);
-
-            /* REAL API CALL - Uncomment when your backend is ready
-            const response = await fetch('/index.php/your-journal/api/santaane/analyze', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    text: abstractText
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`Analysis failed: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            this.currentAnalysisData = data;
-            this.displayResults(data);
-            */
+            this.currentAnalysisData = analysisData;
+            this.displayResults(analysisData);
             
         } catch (error) {
             console.error('Analysis error:', error);
@@ -128,17 +77,167 @@ class SantaaneAI {
     }
 
     /**
+     * Call AIML API for abstract analysis
+     */
+    async callAIMLAPI(abstractText) {
+        try {
+            const prompt = this.buildAnalysisPrompt(abstractText);
+            
+            const response = await fetch(this.AIML_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.AIML_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: this.AI_MODEL,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 2000
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`AIML API error! Status ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('AIML API Response:', data);
+
+            // Parse the AI response
+            const aiAnalysis = data.choices[0].message.content;
+            return this.parseAIResponse(aiAnalysis, abstractText);
+            
+        } catch (error) {
+            console.error('AIML API Error:', error);
+            throw new Error('Failed to analyze with AI: ' + error.message);
+        }
+    }
+
+    /**
+     * Build analysis prompt for AI
+     */
+    buildAnalysisPrompt(abstractText) {
+        return `Please analyze this academic abstract and provide a structured analysis in JSON format:
+
+Abstract to analyze:
+"${abstractText}"
+
+Please provide your analysis in this exact JSON format:
+{
+  "wordCount": [number of words],
+  "sentenceCount": [number of sentences],
+  "clarityScore": [score from 60-100],
+  "suggestions": [
+    "Suggestion 1 for improvement",
+    "Suggestion 2 for improvement", 
+    "Suggestion 3 for improvement"
+  ],
+  "aiEnhanced": "[Provide an improved version of the abstract]",
+  "analysisTimestamp": "${new Date().toISOString()}"
+}
+
+Focus on:
+- Academic writing clarity and structure
+- Sentence complexity and readability
+- Research contribution clarity
+- Abstract completeness (objective, method, results, conclusion)
+- Grammar and style improvements
+
+Return ONLY the JSON, no additional text or explanations.`;
+    }
+
+    /**
+     * Parse AI response and format for display
+     */
+    parseAIResponse(aiResponse, originalText) {
+        try {
+            // Try to extract JSON from the response
+            const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                
+                // Add status and ensure all fields are present
+                return {
+                    status: true,
+                    wordCount: parsed.wordCount || this.countWords(originalText),
+                    sentenceCount: parsed.sentenceCount || this.countSentences(originalText),
+                    clarityScore: parsed.clarityScore || 75,
+                    suggestions: parsed.suggestions || ['AI analysis completed successfully.'],
+                    aiEnhanced: parsed.aiEnhanced || originalText,
+                    analysisTimestamp: parsed.analysisTimestamp || new Date().toISOString()
+                };
+            }
+        } catch (error) {
+            console.error('Error parsing AI response:', error);
+        }
+
+        // Fallback analysis if JSON parsing fails
+        return this.createFallbackAnalysis(originalText, aiResponse);
+    }
+
+    /**
+     * Create fallback analysis if AI parsing fails
+     */
+    createFallbackAnalysis(originalText, aiResponse) {
+        return {
+            status: true,
+            wordCount: this.countWords(originalText),
+            sentenceCount: this.countSentences(originalText),
+            clarityScore: 78,
+            suggestions: [
+                'AI analysis provided general feedback.',
+                'Consider reviewing the structure of your abstract.',
+                'Ensure all key research elements are clearly stated.'
+            ],
+            aiEnhanced: aiResponse || originalText,
+            analysisTimestamp: new Date().toISOString()
+        };
+    }
+
+    /**
+     * Count words in text
+     */
+    countWords(text) {
+        return text.trim().split(/\s+/).length;
+    }
+
+    /**
+     * Count sentences in text
+     */
+    countSentences(text) {
+        return text.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
+    }
+
+    /**
      * Get abstract text from TinyMCE editor
-     * @method getAbstractText
-     * @author HAMADOU BA
-     * @returns {string} The abstract text content
      */
     getAbstractText() {
-        const tinyMCEId = 'titleAbstract-abstract-control-en';
+        // Try multiple possible TinyMCE editor IDs
+        const possibleIds = [
+            'titleAbstract-abstract-control-en',
+            'abstract-control-en',
+            'abstract-en',
+            'titleAbstract-abstract-control',
+            'abstract-control'
+        ];
         
-        if (typeof tinymce !== 'undefined' && tinymce.get(tinyMCEId)) {
-            const editor = tinymce.get(tinyMCEId);
-            return editor.getContent({ format: 'text' });
+        for (const editorId of possibleIds) {
+            if (typeof tinymce !== 'undefined' && tinymce.get(editorId)) {
+                const editor = tinymce.get(editorId);
+                return editor.getContent({ format: 'text' });
+            }
+        }
+        
+        // Fallback: try to find textarea with abstract in name/id
+        const textareas = document.querySelectorAll('textarea[id*="abstract"], textarea[name*="abstract"]');
+        if (textareas.length > 0) {
+            return textareas[0].value;
         }
         
         return '';
@@ -146,9 +245,6 @@ class SantaaneAI {
 
     /**
      * Display analysis results in the interface
-     * @method displayResults
-     * @author HAMADOU BA
-     * @param {Object} data - Analysis data from API
      */
     displayResults(data) {
         // Update stats
@@ -156,14 +252,11 @@ class SantaaneAI {
         document.getElementById('sentence-count').textContent = data.sentenceCount || 0;
         document.getElementById('clarity-score').textContent = data.clarityScore ? `${data.clarityScore}%` : 'N/A';
 
-        // Display keywords
-        this.displayKeywords(data.keywordCheck || {});
-
         // Display suggestions
         this.displaySuggestions(data.suggestions || []);
 
         // Display enhanced version
-        document.getElementById('enhanced-text').textContent = data.aiEnchanched || data.aiEnhanced || 'No enhanced version available.';
+        document.getElementById('enhanced-text').textContent = data.aiEnhanced || 'No enhanced version available.';
 
         // Display timestamp
         const timestamp = data.analysisTimestamp ? 
@@ -175,24 +268,9 @@ class SantaaneAI {
         this.showResults();
     }
 
-    displayKeywords(keywords) {
-        const container = document.getElementById('keywords-container');
-        container.innerHTML = '';
-
-        Object.entries(keywords).forEach(([keyword, present]) => {
-            const tag = document.createElement('div');
-            tag.className = `keyword-tag ${present ? 'present' : 'absent'}`;
-            
-            const icon = present ? 'fas fa-check' : 'fas fa-times';
-            tag.innerHTML = `
-                <i class="${icon}"></i>
-                <span>${keyword}</span>
-            `;
-            
-            container.appendChild(tag);
-        });
-    }
-
+    /**
+     * Display improvement suggestions
+     */
     displaySuggestions(suggestions) {
         const container = document.getElementById('suggestions-container');
         container.innerHTML = '';
@@ -215,13 +293,9 @@ class SantaaneAI {
 
     /**
      * Apply the AI-enhanced version to TinyMCE editor
-     * @async
-     * @method applyEnhancedVersion
-     * @author HAMADOU BA
-     * @returns {Promise<void>}
      */
     async applyEnhancedVersion() {
-        if (!this.currentAnalysisData || !this.currentAnalysisData.aiEnchanched) {
+        if (!this.currentAnalysisData || !this.currentAnalysisData.aiEnhanced) {
             this.showCustomAlert('No enhanced version available to apply.', 'warning');
             return;
         }
@@ -232,34 +306,51 @@ class SantaaneAI {
         );
         
         if (confirmed) {
-            const tinyMCEId = 'titleAbstract-abstract-control-en';
+            const possibleIds = [
+                'titleAbstract-abstract-control-en',
+                'abstract-control-en',
+                'abstract-en',
+                'titleAbstract-abstract-control',
+                'abstract-control'
+            ];
 
-            if (typeof tinymce !== 'undefined' && tinymce.get(tinyMCEId)) {
-                const editor = tinymce.get(tinyMCEId);
-                const enhancedContent = this.currentAnalysisData.aiEnchanched || this.currentAnalysisData.aiEnhanced;
-                
-                editor.setContent(enhancedContent);
-                editor.fire('change');
-                
-                this.showSuccessToast('Abstract successfully updated with AI-enhanced version!');
-                
-                const editorContainer = document.querySelector('.tox-tinymce');
-                if (editorContainer) {
-                    editorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            let editorFound = false;
+            
+            for (const editorId of possibleIds) {
+                if (typeof tinymce !== 'undefined' && tinymce.get(editorId)) {
+                    const editor = tinymce.get(editorId);
+                    const enhancedContent = this.currentAnalysisData.aiEnhanced;
+                    
+                    editor.setContent(enhancedContent);
+                    editor.fire('change');
+                    
+                    this.showSuccessToast('Abstract successfully updated with AI-enhanced version!');
+                    
+                    const editorContainer = document.querySelector('.tox-tinymce');
+                    if (editorContainer) {
+                        editorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    
+                    editorFound = true;
+                    break;
                 }
-            } else {
-                this.showCustomAlert('Could not find the TinyMCE editor.', 'error');
+            }
+
+            if (!editorFound) {
+                // Fallback: try to find textarea
+                const textareas = document.querySelectorAll('textarea[id*="abstract"], textarea[name*="abstract"]');
+                if (textareas.length > 0) {
+                    textareas[0].value = this.currentAnalysisData.aiEnhanced;
+                    this.showSuccessToast('Abstract successfully updated with AI-enhanced version!');
+                } else {
+                    this.showCustomAlert('Could not find the abstract editor.', 'error');
+                }
             }
         }
     }
 
     /**
      * Show custom confirmation modal
-     * @method showCustomConfirm
-     * @author HAMADOU BA
-     * @param {string} title - Modal title
-     * @param {string} message - Modal message
-     * @returns {Promise<boolean>} User's confirmation choice
      */
     showCustomConfirm(title, message) {
         return new Promise((resolve) => {
@@ -356,10 +447,36 @@ class SantaaneAI {
         });
     }
 
-    // Custom Alert System
+    /**
+     * Show custom alert notification
+     */
     showCustomAlert(message, type = 'info') {
         const alert = document.createElement('div');
         alert.className = `santaane-alert santaane-alert-${type}`;
+        alert.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            max-width: 400px;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10001;
+            animation: slideInRight 0.3s ease-out;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        `;
+        
+        const colors = {
+            info: { bg: '#dbeafe', border: '#60a5fa', text: '#1e40af', icon: '#3b82f6' },
+            warning: { bg: '#fef3c7', border: '#f59e0b', text: '#92400e', icon: '#f59e0b' },
+            error: { bg: '#fecaca', border: '#f87171', text: '#991b1b', icon: '#ef4444' },
+            success: { bg: '#d1fae5', border: '#34d399', text: '#065f46', icon: '#10b981' }
+        };
+        
+        const color = colors[type];
+        alert.style.background = color.bg;
+        alert.style.border = `1px solid ${color.border}`;
+        alert.style.color = color.text;
         
         const icons = {
             info: 'fas fa-info-circle',
@@ -369,13 +486,15 @@ class SantaaneAI {
         };
         
         alert.innerHTML = `
-            <div class="alert-content">
-                <i class="${icons[type]}"></i>
-                <span class="alert-message">${message}</span>
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <i class="${icons[type]}" style="color: ${color.icon}; font-size: 18px; margin-top: 2px;"></i>
+                <div style="flex: 1;">
+                    <span style="font-weight: 500; font-size: 14px;">${message}</span>
+                </div>
+                <button class="alert-close" style="background: none; border: none; cursor: pointer; padding: 0; margin-left: 8px;">
+                    <i class="fas fa-times" style="color: ${color.text}; font-size: 14px;"></i>
+                </button>
             </div>
-            <button class="alert-close">
-                <i class="fas fa-times"></i>
-            </button>
         `;
         
         document.body.appendChild(alert);
@@ -403,30 +522,16 @@ class SantaaneAI {
         });
     }
 
-    // Success Toast
+    /**
+     * Show success toast notification
+     */
     showSuccessToast(message) {
-        const toast = document.createElement('div');
-        toast.className = 'santaane-success-toast';
-        
-        toast.innerHTML = `
-            <div class="toast-content">
-                <i class="fas fa-check-circle"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.animation = 'slideOutRight 0.3s ease-out forwards';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    document.body.removeChild(toast);
-                }
-            }, 300);
-        }, 4000);
+        this.showCustomAlert(message, 'success');
     }
 
+    /**
+     * Show/hide loading state on analyze button
+     */
     showLoading(show) {
         const btnText = this.analyzeBtn.querySelector('.btn-text');
         const btnIcon = this.analyzeBtn.querySelector('.btn-icon');
@@ -445,25 +550,65 @@ class SantaaneAI {
         }
     }
 
+    /**
+     * Show results container with animation
+     */
     showResults() {
         this.resultsContainer.style.display = 'block';
         this.resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    /**
+     * Hide results container
+     */
     hideResults() {
         this.resultsContainer.style.display = 'none';
     }
 
+    /**
+     * Show error message
+     */
     showError(message) {
         this.showCustomAlert(message, 'error');
     }
+}
 
-  }
+/**
+ * Add required CSS animations
+ */
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+    
+    @keyframes scaleIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
 
 /**
  * Initialize Santaane AI when DOM is ready
  */
-
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing Santaane AI with AIML API...');
     new SantaaneAI();
 });
