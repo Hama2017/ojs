@@ -271,6 +271,22 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## Changelog
 
+## v1.1.1 - 2025-08-23
+
+- Added role-based permission check for plugin access  
+
+
+
+##### Implementation Notes
+
+- **Role retrieval**: Currently, the plugin retrieves **user permissions** rather than exact roles.  
+  - The logic works and ensures only eligible users access the AI section.  
+  - Full role detection will be implemented in a future version.
+- **Premium access**: Checks both individual and institutional premium subscriptions.  
+- **Template injection**: Adds `santaaneAiSection` into the submission wizard dynamically.  
+- **Clean logging**: Removed PHP `error_log` outputs for production readiness.
+
+
 ### v1.1.0 - 2025-08-23
 
 **Major AI Integration Update**
@@ -295,6 +311,8 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - Font Awesome 6.7.2 integration
 - Comprehensive error handling and logging
 - Clean, maintainable code structure
+
+
 
 ## License
 
