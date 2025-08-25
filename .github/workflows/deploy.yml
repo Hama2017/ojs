@@ -58,23 +58,11 @@ jobs:
         SSH_HOST: ${{ secrets.SSH_HOST }}
         SSH_USER: ${{ secrets.SSH_USER }}
       run: |
-        # Créer le dossier SSH
         mkdir -p ~/.ssh
-        
-        # Configurer la clé privée (ed25519 compatible)
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-        chmod 600 ~/.ssh/id_ed25519
-        
-        # Ajouter l'hôte aux known_hosts
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
-        
-        # Configurer SSH pour utiliser la clé ed25519
-        echo "Host $SSH_HOST" >> ~/.ssh/config
-        echo "  IdentityFile ~/.ssh/id_ed25519" >> ~/.ssh/config
-        echo "  IdentitiesOnly yes" >> ~/.ssh/config
-        chmod 600 ~/.ssh/config
-        
-        echo "🔑 SSH configuration completed"
+        echo "SSH configuration completed"
         
     # Étape 5: Tester la connexion SSH
     - name: Test SSH Connection
