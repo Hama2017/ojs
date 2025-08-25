@@ -29,20 +29,23 @@ jobs:
       run: |
         echo "📦 Preparing plugin files for deployment..."
         
-        # Créer un dossier temporaire
+        # Créer le dossier de destination
         mkdir -p deployment/premiumSubmissionHelper
         
-        # Copier tous les fichiers nécessaires (exclure les fichiers de dev)
-        rsync -av --progress . deployment/premiumSubmissionHelper/ \
-          --exclude='.git' \
-          --exclude='.github' \
-          --exclude='node_modules' \
-          --exclude='*.md' \
-          --exclude='.gitignore'
+        # Vérifier que le plugin existe
+        if [ ! -d "plugins/generic/premiumSubmissionHelper" ]; then
+          echo "❌ Plugin directory not found!"
+          exit 1
+        fi
         
-        # Afficher la structure des fichiers
-        echo "📂 Plugin structure:"
-        find deployment/premiumSubmissionHelper -type f | head -20
+        # Copier SEULEMENT les fichiers du plugin
+        cp -r plugins/generic/premiumSubmissionHelper/* deployment/premiumSubmissionHelper/
+        
+        # Vérifier le contenu
+        echo "📂 Plugin files to deploy:"
+        ls -la deployment/premiumSubmissionHelper/
+        echo ""
+        echo "📊 Total files: $(find deployment/premiumSubmissionHelper -type f | wc -l)"
         
     # Étape 3: Créer une archive
     - name: Create deployment archive
@@ -58,11 +61,23 @@ jobs:
         SSH_HOST: ${{ secrets.SSH_HOST }}
         SSH_USER: ${{ secrets.SSH_USER }}
       run: |
+        # Créer le dossier SSH
         mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+        
+        # Configurer la clé privée (ed25519 compatible)
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        
+        # Ajouter l'hôte aux known_hosts
         ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
-        echo "SSH configuration completed"
+        
+        # Configurer SSH pour utiliser la clé ed25519
+        echo "Host $SSH_HOST" >> ~/.ssh/config
+        echo "  IdentityFile ~/.ssh/id_ed25519" >> ~/.ssh/config
+        echo "  IdentitiesOnly yes" >> ~/.ssh/config
+        chmod 600 ~/.ssh/config
+        
+        echo "🔑 SSH configuration completed"
         
     # Étape 5: Tester la connexion SSH
     - name: Test SSH Connection
