@@ -1,0 +1,86 @@
+name: Continuous Integration
+
+# Déclenché sur chaque push vers la branche feature
+on:
+  push:
+    branches: [ feat/premium-helper-plugin-hamadouba ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Étape 1: Récupérer le code
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    # Étape 2: Installer PHP
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml, ctype, json, tokenizer
+        tools: composer
+        
+    # Étape 3: Installer les dépendances
+    - name: Install dependencies
+      run: |
+        # Installer PHP_CodeSniffer globalement
+        composer global require "squizlabs/php_codesniffer=*"
+        
+        # Ajouter composer au PATH
+        echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
+        
+    # Étape 4: Vérifier l'installation
+    - name: Verify CodeSniffer installation
+      run: |
+        phpcs --version
+        phpcs -i
+        
+    # Étape 5: Linter le code PHP avec PSR-12
+    - name: Run PHP CodeSniffer
+      run: |
+        # Scanner tous les fichiers PHP avec le standard PSR-12
+        phpcs --standard=PSR12 --extensions=php --ignore=vendor/ .
+        
+    # Étape 6: Tests additionnels (optionnel)
+    - name: Check PHP syntax
+      run: |
+        # Vérifier la syntaxe PHP de tous les fichiers
+        find . -name "*.php" -not -path "./vendor/*" -exec php -l {} \;
+        
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        
+    # Scanner les vulnérabilités de sécurité
+    - name: Security scan
+      run: |
+        # Rechercher des patterns de sécurité suspects
+        echo "🔍 Scanning for potential security issues..."
+        
+        # Rechercher des tokens API hardcodés
+        if grep -r "api_key\s*=\s*['\"][^'\"]*['\"]" --include="*.php" . 2>/dev/null; then
+          echo "⚠️  Warning: Potential hardcoded API keys found"
+          exit 1
+        fi
+        
+        # Rechercher des mots de passe hardcodés
+        if grep -r "password\s*=\s*['\"][^'\"]*['\"]" --include="*.php" . 2>/dev/null; then
+          echo "⚠️  Warning: Potential hardcoded passwords found"
+          exit 1
+        fi
+        
+        echo "✅ Security scan completed successfully"
