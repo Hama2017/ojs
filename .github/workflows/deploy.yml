@@ -1,6 +1,6 @@
 name: Deploy to Production
 
-# Déclenchement manuel + automatique
+# Déclenchement manuel uniquement
 on:
   workflow_dispatch:
     inputs:
@@ -12,46 +12,14 @@ on:
         options:
         - production
         - staging
-  push:
-    branches:
-      - main                    # Déclenche sur push vers main
-    tags:
-      - 'v*'                   # Déclenche sur tags version (v1.0.0, v1.2.0, etc.)
-    paths:
-      - 'plugins/generic/premiumSubmissionHelper/**'  # Seulement si le plugin change
 
 jobs:
   deploy:
     name: Deploy Plugin to OJS Server
     runs-on: ubuntu-latest
-    environment: production  # Environment fixe, on détermine la logique dans les steps
+    environment: ${{ github.event.inputs.environment }}
     
     steps:
-    # Déterminer l'environnement selon le déclencheur
-    - name: Determine environment
-      id: determine_env
-      run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          echo "trigger=manual" >> $GITHUB_OUTPUT
-        elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
-          echo "environment=production" >> $GITHUB_OUTPUT
-          echo "trigger=tag" >> $GITHUB_OUTPUT
-        elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-          echo "environment=production" >> $GITHUB_OUTPUT
-          echo "trigger=branch" >> $GITHUB_OUTPUT
-        else
-          echo "environment=production" >> $GITHUB_OUTPUT
-          echo "trigger=fallback" >> $GITHUB_OUTPUT
-        fi
-        
-    # Afficher les informations de déploiement
-    - name: Show deployment info
-      run: |
-        echo "🚀 Deployment triggered by: ${{ steps.determine_env.outputs.trigger }}"
-        echo "📍 Environment: ${{ steps.determine_env.outputs.environment }}"
-        echo "🔗 Ref: ${{ github.ref }}"
-        
     # Étape 1: Récupérer le code
     - name: Checkout code
       uses: actions/checkout@v4
@@ -196,8 +164,7 @@ jobs:
       run: |
         echo "🎉 Deployment completed successfully!"
         echo "📊 Deployment Summary:"
-        echo "  • Environment: ${{ steps.determine_env.outputs.environment }}"
-        echo "  • Trigger: ${{ steps.determine_env.outputs.trigger }}"
+        echo "  • Environment: ${{ github.event.inputs.environment }}"
         echo "  • Branch: ${{ github.ref }}"
         echo "  • Commit: ${{ github.sha }}"
         echo "  • Deployed by: ${{ github.actor }}"
