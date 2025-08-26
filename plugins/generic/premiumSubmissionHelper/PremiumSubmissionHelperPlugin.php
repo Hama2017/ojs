@@ -31,6 +31,7 @@ use APP\template\TemplateManager;
 use APP\pages\submission\SubmissionHandler;
 use PKP\db\DAORegistry;
 use PKP\security\Role;
+use Illuminate\Support\Facades\DB;
 
 /**
  * PremiumSubmissionHelperPlugin Class
@@ -107,38 +108,44 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
     private function getUserRolesNames($journal, $user): array
     {
         $roleNames = [];
-
+        
+        // Early return if required parameters are missing
         if (!$user || !$journal) {
             return $roleNames;
         }
-
+        
         try {
-            // Retrieve Role objects for the user
-            $userRoles = $user->getRoles($journal->getId());
+            // Get Laravel database connection instance
+            $db = DB::connection();
+            
+            // Query to retrieve user role names from the database
+            // Joins users -> user_user_groups -> user_group_settings -> user_groups
+            // Filters by context_id (journal) and setting_name = 'name'
+            $results = $db->select("
+                SELECT DISTINCT ugs.setting_value as role_name
+                FROM users u
+                JOIN user_user_groups uug ON u.user_id = uug.user_id
+                JOIN user_group_settings ugs ON uug.user_group_id = ugs.user_group_id
+                JOIN user_groups ug ON uug.user_group_id = ug.user_group_id
+                WHERE u.user_id = ? 
+                    AND ug.context_id = ?
+                    AND ugs.setting_name = 'name'
+            ", [$user->getId(), $journal->getId()]);
+            
+            // Process each role result
+            foreach ($results as $row) {
+                $roleNames[] = $row->role_name;
+                            }
 
-            if (empty($userRoles)) {
-                return $roleNames;
-            }
-
-            // Extract Role IDs
-            $userRoleIds = array_map(fn($role) => $role->getId(), $userRoles);
-
-            // Get role names using Application::getRoleNames()
-            $userRoleNames = \APP\core\Application::getRoleNames(false, $userRoleIds);
-
-            foreach ($userRoleNames as $fullRoleName) {
-                // fullRoleName format: "user.role.manager" or "user.role.premium"
-                $parts = explode('.', $fullRoleName);
-                $lastPart = end($parts); // Extract the last part
-                $roleNames[] = $lastPart;
-            }
-
-        } catch (Exception $e) {
-            // Ignore errors silently
+        } catch (Exception $exception) {
+            // Log error 
+            error_log("Database error while fetching user roles: " . $exception->getMessage());
+            error_log("Stack trace: " . $exception->getTraceAsString());
         }
-
-        return $roleNames;
+    
+    return $roleNames;
     }
+    
 
     /**
      * Check if user has an active premium subscription (individual or institutional)
