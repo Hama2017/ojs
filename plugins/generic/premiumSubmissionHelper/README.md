@@ -4,7 +4,7 @@
 
 <img src="https://i.ibb.co/PvTrC8Dc/12d69de3-0cd1-4ce1-af72-6000586f3532.png" alt="Premium Submission Helper Logo" width="500">
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/your-username/premium-submission-helper/releases) [![OJS](https://img.shields.io/badge/OJS-3.5+-green.svg)](https://pkp.sfu.ca/software/ojs/) [![PHP](https://img.shields.io/badge/PHP-8.1+-purple.svg)](https://www.php.net/) [![AI](https://img.shields.io/badge/AI-AIMLAPI-orange.svg)](https://aimlapi.com) [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/your-username/premium-submission-helper/releases) [![OJS](https://img.shields.io/badge/OJS-3.5+-green.svg)](https://pkp.sfu.ca/software/ojs/) [![PHP](https://img.shields.io/badge/PHP-8.1+-purple.svg)](https://www.php.net/) [![AI](https://img.shields.io/badge/AI-AIMLAPI-orange.svg)](https://aimlapi.com) [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
 **Enhance your OJS submission workflow with real AI-powered premium features**
 
@@ -281,11 +281,18 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 - **Role retrieval**: Currently, the plugin retrieves **user permissions** rather than exact roles.  
   - The logic works and ensures only eligible users access the AI section.  
-  - Full role detection will be implemented in a future version.
 - **Premium access**: Checks both individual and institutional premium subscriptions.  
 - **Template injection**: Adds `santaaneAiSection` into the submission wizard dynamically.  
 - **Clean logging**: Removed PHP `error_log` outputs for production readiness.
 
+
+
+### v1.2.0 - 2025-08-26
+
+**Premium Role Verification Support**
+
+- **Premium Role Check** - Added verification to detect if a user has a Premium subscription
+  
 
 ### v1.1.0 - 2025-08-23
 
