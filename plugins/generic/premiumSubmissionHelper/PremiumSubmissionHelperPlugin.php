@@ -1,7 +1,8 @@
 <?php
+
 /**
  * Premium Submission Helper Plugin
- * 
+ *
  * @package    PremiumSubmissionHelper
  * @subpackage SantaaneAI
  * @author     HAMADOU BA <contact@hamadouba.com>
@@ -10,11 +11,11 @@
  * @license    MIT License
  * @created    2025-08-23
  * @updated    2025-08-23
- * 
+ *
  * Description: OJS Plugin for premium submission enhancement with AI analysis
  * Features: AI-powered abstract analysis, TinyMCE integration, submission wizard
  * Dependencies: OJS 3.5+, Font Awesome 6.4.0+
- * 
+ *
  * Plugin Structure:
  * - Template injection for submission wizard
  * - Asset management (CSS/JS)
@@ -35,24 +36,24 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * PremiumSubmissionHelperPlugin Class
- * 
+ *
  * Main plugin class for integrating Santaane AI analysis into OJS submission workflow
  * Handles premium user checks and submission wizard enhancements
  */
-class PremiumSubmissionHelperPlugin extends GenericPlugin 
+class PremiumSubmissionHelperPlugin extends GenericPlugin
 {
     /** @var string Target page for submission enhancement */
-    const SUBMISSION_PAGE_TARGET = 'submission';
-    
+    public const SUBMISSION_PAGE_TARGET = 'submission';
+
     /** @var string Premium subscription type name */
-    const PREMIUM = 'premium';
-    
+    public const PREMIUM = 'premium';
+
     /** @var bool Indicates if current user has premium access */
-    private $isPremium = false;
+    private bool $isPremium = false;
 
     /**
      * Register the plugin and its hooks
-     * 
+     *
      * @method register
      * @author HAMADOU BA
      * @param string $category Plugin category
@@ -63,18 +64,18 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
     public function register($category, $path, $mainContextId = null)
     {
         $success = parent::register($category, $path, $mainContextId);
-        
+
         if ($success && $this->getEnabled($mainContextId)) {
             Hook::add('TemplateManager::display', [$this, 'handleTemplateDisplay']);
             Hook::add('Template::SubmissionWizard::Section', [$this, 'handleSubmissionWizardSection']);
         }
-        
+
         return $success;
     }
 
     /**
      * Get plugin display name
-     * 
+     *
      * @method getDisplayName
      * @author HAMADOU BA
      * @return string Plugin display name
@@ -86,7 +87,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
 
     /**
      * Get plugin description
-     * 
+     *
      * @method getDescription
      * @author HAMADOU BA
      * @return string Plugin description
@@ -97,8 +98,9 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
     }
 
     /**
-     * Retrieve the names of roles assigned to a user within a journal - Notice Not Workings Properly but this is a starting point = )
-     * 
+     * Retrieve the names of roles assigned to a user within a journal
+     * Notice Not Working Properly but this is a starting point
+     *
      * @method getUserRolesNames
      * @author HAMADOU BA
      * @param object $journal Journal instance
@@ -142,14 +144,14 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
             error_log("Database error while fetching user roles: " . $exception->getMessage());
             error_log("Stack trace: " . $exception->getTraceAsString());
         }
-    
+
     return $roleNames;
     }
     
 
     /**
      * Check if user has an active premium subscription (individual or institutional)
-     * 
+     *
      * @method checkUserPremiumStatus
      * @author HAMADOU BA
      * @param object $journal Journal instance
@@ -163,9 +165,9 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         }
 
         try {
-
-            // Notice Not Workings Properly but this is a starting point = ) thats why i implemented the role check with subscription checks
-            // Check if user has 'premium' role first 
+            // Notice Not Working Properly but this is a starting point
+            // thats why i implemented the role check with subscription checks
+            // Check if user has 'premium' role first
 
             $userRoles = $this->getUserRolesNames($journal, $user);
             $isPremiumUser = in_array(self::PREMIUM, $userRoles);
@@ -174,7 +176,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
                 return true;
             }
 
-            // Check individual premium subscription Additional feature  Works properly
+            // Check individual premium subscription Additional feature Works properly
             if ($this->checkIndividualPremiumSubscription($journal, $user)) {
                 return true;
             }
@@ -183,7 +185,6 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
             if ($this->checkInstitutionalPremiumSubscription($journal, $user)) {
                 return true;
             }
-
         } catch (Exception $e) {
             // Ignore errors silently
         }
@@ -193,7 +194,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
 
     /**
      * Check if user has an active individual premium subscription
-     * 
+     *
      * @method checkIndividualPremiumSubscription
      * @author HAMADOU BA
      * @param object $journal Journal instance
@@ -206,8 +207,9 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
             $subscriptionDao = DAORegistry::getDAO('IndividualSubscriptionDAO');
             $subscription = $subscriptionDao->getByUserIdForJournal($user->getId(), $journal->getId());
 
-            return $subscription && !$subscription->isExpired() && trim($subscription->getSubscriptionTypeName()) === self::PREMIUM;
-
+            return $subscription &&
+                   !$subscription->isExpired() &&
+                   trim($subscription->getSubscriptionTypeName()) === self::PREMIUM;
         } catch (Exception $e) {
             return false;
         }
@@ -215,7 +217,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
 
     /**
      * Check if user has an active institutional premium subscription
-     * 
+     *
      * @method checkInstitutionalPremiumSubscription
      * @author HAMADOU BA
      * @param object $journal Journal instance
@@ -226,18 +228,22 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
     {
         try {
             $subscriptionInstitutionalDao = DAORegistry::getDAO('InstitutionalSubscriptionDAO');
-            $institutionalSubscriptions = $subscriptionInstitutionalDao->getByUserIdForJournal($user->getId(), $journal->getId());
+            $institutionalSubscriptions = $subscriptionInstitutionalDao->getByUserIdForJournal(
+                $user->getId(),
+                $journal->getId()
+            );
 
             if ($institutionalSubscriptions) {
                 while ($subscription = $institutionalSubscriptions->next()) {
-                    if ($subscription->getUserId() === $user->getId() &&
+                    if (
+                        $subscription->getUserId() === $user->getId() &&
                         !$subscription->isExpired() &&
-                        trim($subscription->getSubscriptionTypeName()) === self::PREMIUM) {
+                        trim($subscription->getSubscriptionTypeName()) === self::PREMIUM
+                    ) {
                         return true;
                     }
                 }
             }
-
         } catch (Exception $e) {
             return false;
         }
@@ -247,7 +253,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
 
     /**
      * Handle template display and inject CSS/JS assets for premium users
-     * 
+     *
      * @method handleTemplateDisplay
      * @author HAMADOU BA
      * @param string $hookName Hook name
@@ -276,7 +282,8 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         // Add CSS and JS assets
         $templateMgr->addStylesheet(
             'plugin-premium-analysis-santaane-css',
-            $request->getBaseUrl() . '/' . $this->getPluginPath() . '/vendor/css/fontawesome-free-6.7.2-web/css/all.min.css',
+            $request->getBaseUrl() . '/' . $this->getPluginPath() .
+            '/vendor/css/fontawesome-free-6.7.2-web/css/all.min.css',
             [
                 'contexts' => 'backend',
                 'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
@@ -304,7 +311,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
         // Inject Santaane AI section into submission wizard
         $steps = $templateMgr->getState('steps');
         if ($steps) {
-            $steps = array_map(function($step) {
+            $steps = array_map(function ($step) {
                 if ($step['id'] === 'details') {
                     $step['sections'][] = [
                         'id' => 'santaaneAiSection',
@@ -322,7 +329,7 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
 
     /**
      * Handle submission wizard section rendering for premium users
-     * 
+     *
      * @method handleSubmissionWizardSection
      * @author HAMADOU BA
      * @param string $hookName Hook name
