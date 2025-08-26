@@ -110,16 +110,16 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
     private function getUserRolesNames($journal, $user): array
     {
         $roleNames = [];
-        
+
         // Early return if required parameters are missing
         if (!$user || !$journal) {
             return $roleNames;
         }
-        
+
         try {
             // Get Laravel database connection instance
             $db = DB::connection();
-            
+
             // Query to retrieve user role names from the database
             // Joins users -> user_user_groups -> user_group_settings -> user_groups
             // Filters by context_id (journal) and setting_name = 'name'
@@ -129,25 +129,23 @@ class PremiumSubmissionHelperPlugin extends GenericPlugin
                 JOIN user_user_groups uug ON u.user_id = uug.user_id
                 JOIN user_group_settings ugs ON uug.user_group_id = ugs.user_group_id
                 JOIN user_groups ug ON uug.user_group_id = ug.user_group_id
-                WHERE u.user_id = ? 
+                WHERE u.user_id = ?
                     AND ug.context_id = ?
                     AND ugs.setting_name = 'name'
             ", [$user->getId(), $journal->getId()]);
-            
+
             // Process each role result
             foreach ($results as $row) {
                 $roleNames[] = $row->role_name;
-                            }
-
+            }
         } catch (Exception $exception) {
-            // Log error 
+            // Log error
             error_log("Database error while fetching user roles: " . $exception->getMessage());
             error_log("Stack trace: " . $exception->getTraceAsString());
         }
 
-    return $roleNames;
+        return $roleNames;
     }
-    
 
     /**
      * Check if user has an active premium subscription (individual or institutional)
