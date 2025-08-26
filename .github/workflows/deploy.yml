@@ -24,7 +24,7 @@ jobs:
   deploy:
     name: Deploy Plugin to OJS Server
     runs-on: ubuntu-latest
-    environment: ${{ steps.determine_env.outputs.environment }}
+    environment: production  # Environment fixe, on détermine la logique dans les steps
     
     steps:
     # Déterminer l'environnement selon le déclencheur
